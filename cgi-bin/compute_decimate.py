@@ -13,7 +13,7 @@ debug=1
 
 #print sys.argv[1]
 if os.path.isfile(sys.argv[1]):
-   X27=open(sys.argv[1], 'r')
+   X29=open(sys.argv[1], 'r')
    sys.stderr.write("Compute_decimate of file\n")
    sys.stderr.write(sys.argv[1]+"\n")
 else:
@@ -21,7 +21,7 @@ else:
    sys.stderr.write(sys.argv[1]+"\n")
    quit(2)
 
-Reader=csv.reader(X27)
+Reader=csv.reader(X29)
 for row in Reader:
 #    print row
     lines+=1
@@ -29,7 +29,7 @@ for row in Reader:
     if (lines<4):
         continue
 
-    time=float(row[0])
+    time=float(row[1])
 #    print time
 
     if ( start_time == -1 ) :
@@ -42,7 +42,7 @@ for row in Reader:
         end_time=time+604800
     else:
         end_time=time
-X27.close()
+X29.close()
 
 epochs=((end_time-start_time)/interval)+1
 #print interval

@@ -32,7 +32,7 @@ else:
             print row
             continue
 
-        time=int(float(row[0])*1000)
+        time=int(float(row[1])*1000)
         if time % decimate_to == 0 :
             Writer.writerow(row)
     
