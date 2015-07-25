@@ -12,11 +12,15 @@ BEGIN {
       Pos[i] = 0.0;
       Unused[i] = 0.0;
       }
+
+   Fixed=0;
+   Current=0;
+
    OFMT="%0.0f";
    Filter_On="";
    if (ARGC > 1) {
       Filter_On=ARGV[1]
-      print "Unused SV count for solution type: " Filter_On "\n";
+      #print "Unused SV count for solution type: " Filter_On "\n";
       ARGV[1]="";
       Filter_On = Filter_On + 0;
       }
@@ -27,6 +31,18 @@ BEGIN {
 {
 
 Pos[$9] = Pos[$9]+1.0;
+
+if ($9==15) {
+
+    if ($10==2) {
+        Fixed++
+    }
+
+    if ($10==1) {
+        Current++
+    }
+
+}
 
 #print Pos[6] " " $9
 #print $9 " " Filter_On;
@@ -107,6 +123,10 @@ END {
  print "Wide-area Float: " Pos[7] " ("Pos[7]/NR* 100  "%)";
  print "Type 8:          " Pos[8] " ("Pos[8]/NR* 100  "%)";
  print "Kalman Auton:    " Pos[9] " ("Pos[9]/NR* 100  "%)";
+ print "Kalman DGNSS:    " Pos[10] " ("Pos[10]/NR* 100  "%)";
+ print "RTX:             " Pos[15] " ("Pos[15]/NR* 100  "%)";
+ print "RTX (Fixed):     " Fixed " (" Fixed/NR* 100  "%)";
+ print "RTX (Current):   " Current " (" Current/NR* 100  "%)";
 # for (i=10;i<=20;i++) {
 #    print "Type " i ":        " Pos[i] " ("Pos[i]/NR* 100"%)";
 #    }  
