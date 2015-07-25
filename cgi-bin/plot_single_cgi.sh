@@ -1,6 +1,8 @@
 #! /bin/bash
 #echo $1 "*" $2 "*" $3 "<br>"
-echo $1 "*" $2 "*" $3 "*" $4 "*" $5 "*" $6 "*<br>"
+echo $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " " $9 "<br>"
+# $upload_file,$extension,$Sol,$Point,$Ant,$TrimbleTools,$Decimate,$Fixed_Range,$project;
+#set -x
 
 Ext=$2
 Sol=$3
@@ -10,10 +12,18 @@ Dir=`dirname $0`;
 normalDir=`cd "${Dir}";pwd`
 #echo $PATH
 PATH=${normalDir}:~/bin:$PATH
+Point=$4
+Ant=$5
+TrimbleTools=$6
+Decimate=$7
+Fixed_Range=$8
+Project=$9
 
-TrimbleTools=$4
-Decimate=$5
-Project=$6
+if [ "$Sol" = -1 ]
+then
+   Sol=""
+   echo "Solution type is automatically computed"
+fi
 
 #export PATH
 #echo "$FileFull<br>$File<br>"
@@ -36,42 +46,42 @@ fi
 
 echo Creating X29 file for $File
 
-if [ -e $File.X29 ]
-then
-   echo "Using existing X29 file"
-   viewdat -d29 -x -o$$.x29 $1
+viewdat -d29 -x -o$$.x29 $1
+
+viewdat -i -d16  -ofile.sum $1
 
 # Skipping creating the file
-   echo "Decimation interval: " $Decimate
+#   echo "Decimation interval: " $Decimate
 
-   if [ "$Decimate" = -1 ]
-   then
-      echo "Computing decimation interval"
-      eval $(compute_decimate.py $$.x29)
-   fi
-
-   if [ $Decimate = 0 ]
-        then
-        echo "No Decimation"
-        echo "All Data, Interval($interval)">Decimation
-   else
-        echo "Decimation interval: " $Decimate
-        echo "Orginal interval: " $interval
-        echo "Every: $Decimate (s), orginal ($interval)">Decimation
-   fi
-
-   echo Creating SNRs file for $File
-   decimate.py $Decimate <$$.x29 > $File.X29
-   cp $1 $FileFull
+if [ "$Decimate" = -1 ]
+then
+   echo "Computing decimation interval"
+   eval $(compute_decimate.py $$.x29)
 fi
 
+if [ $Decimate = 0 ]
+then
+   echo "No Decimation"
+   echo "All Data">Decimation
+else
+   echo "Decimation interval: " $Decimate
+   echo "Orginal interval: " $interval
+   echo "Every: $Decimate (s), orginal ($interval)">Decimation
+fi
 
+echo Creating Decimated file for $File
+decimate.py $Decimate <$$.x29 > $File.X29
+#   cp $1 $FileFull
+
+rm $$.x29
 
 echo name="'$File: '" >file.plt
 echo "$File" >file.html
 
 
-ln  -f $File.X29 file
+#ln  -f $File.X29 file
+
+$normalDir/x29_secs.py <$File.X29 >file
 $normalDir/gnuplot file.plt $normalDir/X29_sol.plt
 
 #echo "Solution Type $Sol";
@@ -90,10 +100,10 @@ echo "Records $Records"
 echo "Latitude: $Lat" > llh.mean
 echo "Longitude: $Long" >> llh.mean
 echo "Height: $Height" >> llh.mean
-echo "Records: $Records" >> llh.mean
+#echo "Records: $Records" >> llh.mean
 
 
-kml_point.py $File $Lat $Long $Height
+$normalDir/kml_point.py $File $Lat $Long $Height
 
 echo "</pre>"
 echo "<a href=\"$File.kml\">$File.kml</a>"
@@ -120,7 +130,7 @@ rm $File.sol
 
 echo ""
 echo "Computing NEE Mean"
-eval $(awk -f $normalDir/x29_mean2_enu.awk $Sol $Sol_HRange $Sol_VRange <$File.enu)
+eval $(awk -f $normalDir/x29_mean2_enu.awk $Sol $Sol_HRange $Sol_VRange $Fixed_Range <$File.enu)
 
 echo "North: $North" | tee  nee.mean
 echo "North Min: $North_Min" | tee  -a nee.mean
@@ -137,6 +147,7 @@ echo "Records: $Records" | tee -a nee.mean
 echo ""
 
 echo Plotting file for $FileFull
+echo "Fixed Range: $Fixed_Range" 
 echo "Horizontal Range for plotting $Sol_HRange"
 echo "Vertical Range for plotting $Sol_VRange"
 echo ""
@@ -149,15 +160,24 @@ echo D3Range=$Sol_3DRange >>file.plt
 echo latency=$Sol_Latency >>file.plt
 echo records=$Records >>file.plt
 echo "$FileFull" >file.html
-cp $normalDir/plot_index.html index.shtml
+#cp $normalDir/plot_index.html index.shtml
 mv $File.enu file
 #echo "pwd $PWD\n"
 #echo "gnuplot file.plt $normalDir/X29_plot.plt\n"
-$normalDir/gnuplot file.plt $normalDir/X29_plot.plt
+$normalDir/gnuplot file.plt $normalDir/X29_plot.plt&
+$normalDir/out_range.py -R 0.0305 < file --OUTAGE outage2.csv --DETAIL range2.csv --SUMMARY range2.sum
+$normalDir/out_range.py -R 0.0455 < file --OUTAGE outage3.csv --DETAIL range3.csv --SUMMARY range3.sum
+$normalDir/gnuplot file.plt $normalDir/range.plt
+$normalDir/gnuplot file.plt $normalDir/range_hist.plt
+wait
 #rm file
 echo Plotting completed
 echo '</pre>'
 #echo -n '<base href="http://trimbletools.com/results/Position/'
-echo -n $File
-echo '/" />'
+#echo -n $File
+#echo '/" />'
+ln -s $normalDir/index.shtml
 cat index.shtml
+rm $File.X29 $File.x29
+rm file
+rm $1
