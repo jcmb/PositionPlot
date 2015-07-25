@@ -2,10 +2,10 @@
 import sys
 
 if len(sys.argv) <> 5:
-    sys.stderr.write('Usage: ' + sys.argv[0] + ' <Point Name> <Lat> <Long> <Height>')
-    sys.stderr.write('')
-    sys.stderr.write('Lat Long are in decimal degrees')
-    sys.stderr.write('writes a file, <Point Name>.kml with a single point that is the llh from the command line')
+    sys.stderr.write('Usage: ' + sys.argv[0] + ' <Point Name> <Lat> <Long> <Height>\n')
+    sys.stderr.write('\n')
+    sys.stderr.write('Lat Long are in decimal degrees\n')
+    sys.stderr.write('writes a file, <Point Name>.kml with a single point that is the llh from the command line\n')
     sys.exit(1)
 
 import simplekml
