@@ -12,7 +12,9 @@
 <p/>
 
 
-Location: <!--#include virtual="kml.html" -->
+Location: <!--#include virtual="kml.html" --> 
+<br/>Summary : <!--#include virtual="sum.html" --> 
+<br/>GNSS Data File Summary: <a href="file.sum">Summary</a>
 
 <pre>
 <!--#include virtual="llh.mean" -->
@@ -144,12 +146,6 @@ Location: <!--#include virtual="kml.html" -->
 <H2>All Error</h2>
 <img src="All_Error.png"/>
 <p/>
-
-<pre>
-<!--#include virtual="file.sum" -->
-</pre>
-
-
 
 
 </body></html>
