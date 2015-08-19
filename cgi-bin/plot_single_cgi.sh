@@ -1,7 +1,7 @@
 #! /bin/bash
 #echo $1 "*" $2 "*" $3 "<br>"
-echo $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " " $9 "<br>"
-# $upload_file,$extension,$Sol,$Point,$Ant,$TrimbleTools,$Decimate,$Fixed_Range,$project;
+echo $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 "<br>"
+# $upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
 #set -x
 
 Ext=$2
@@ -14,10 +14,10 @@ normalDir=`cd "${Dir}";pwd`
 PATH=${normalDir}:~/bin:$PATH
 Point=$4
 Ant=$5
-TrimbleTools=$6
-Decimate=$7
-Fixed_Range=$8
-Project=$9
+#TrimbleTools=$6
+Decimate=$6
+Fixed_Range=$7
+Project=$8
 
 if [ "$Sol" = -1 ]
 then
@@ -29,6 +29,7 @@ fi
 #echo "$FileFull<br>$File<br>"
 #ls -l $1
 
+. $normalDir/JCMBSoft_Config.sh
 
 if [ "$TrimbleTools" = 1 ]
 then
@@ -48,7 +49,7 @@ echo Creating X29 file for $File
 
 viewdat -d29 -x -o$$.x29 $1
 
-viewdat -i -d16  -ofile.sum $1
+viewdat -i -d16  -ofile.sum $1&
 
 # Skipping creating the file
 #   echo "Decimation interval: " $Decimate
@@ -63,15 +64,16 @@ if [ $Decimate = 0 ]
 then
    echo "No Decimation"
    echo "All Data">Decimation
+   tail -n +5 $$.x29 > $File.X29
 else
    echo "Decimation interval: " $Decimate
    echo "Orginal interval: " $interval
    echo "Every: $Decimate (s), orginal ($interval)">Decimation
-fi
-
-echo Creating Decimated file for $File
-decimate.py $Decimate <$$.x29 > $File.X29
+   echo Creating Decimated file for $File
+   decimate.py $Decimate <$$.x29 > $File.X29
 #   cp $1 $FileFull
+
+fi
 
 rm $$.x29
 
@@ -111,17 +113,16 @@ echo "<a href=\"$File.kml\">$File.kml</a>">kml.html
 echo "<pre>"
 
 
-
 awk -f $normalDir/x29_sum.awk $Sol <$File.X29 | tee sum.txt
 
 if [ $Sol ]
 then
    awk -f $normalDir/x29_sol.awk $Sol <$File.X29 >$File.sol
+   rm $File.X29
 else
-   cp $File.X29 $File.sol
+   mv $File.X29 $File.sol
 fi
 
-rm $File.X29
 
 echo "Computing NEE Deltas"
 awk -f $normalDir/x29_enu.awk $File.sol $Lat $Long $Height  >$File.enu
@@ -132,25 +133,40 @@ echo ""
 echo "Computing NEE Mean"
 eval $(awk -f $normalDir/x29_mean2_enu.awk $Sol $Sol_HRange $Sol_VRange $Fixed_Range <$File.enu)
 
+
+eval $(awk -f $normalDir/x29_height_abs.awk < $File.enu |  sort --field-separator=, --numeric-sort --key=13 | $normalDir/x29_height_cdf.awk $Records )
+eval $(awk -f $normalDir/x29_sigma.awk < $File.enu |  sort --field-separator=, --numeric-sort --key=25 | $normalDir/x29_sigma_cdf.awk $Records )
+
 echo "North: $North" | tee  nee.mean
 echo "North Min: $North_Min" | tee  -a nee.mean
 echo "North Max: $North_Max" | tee  -a nee.mean
+echo "North Range: $North_Range" | tee  -a nee.mean
+echo ""| tee -a nee.mean
 echo "East: $East" | tee -a nee.mean
 echo "East Min: $East_Min" | tee  -a nee.mean
 echo "East Max: $East_Max" | tee  -a nee.mean
-echo ""
+echo "East Range: $East_Range" | tee  -a nee.mean
+echo ""| tee -a nee.mean
 echo "Elev: $Elev" | tee -a nee.mean
 echo "Elev Min: $Elev_Min" | tee  -a nee.mean
 echo "Elev Max: $Elev_Max" | tee  -a nee.mean
-echo ""
+echo "Elev Range: $Elev_Range" | tee  -a nee.mean
+echo "Elev 68%: $cdf_68" | tee  -a nee.mean
+echo "Elev 95%: $cdf_95" | tee  -a nee.mean
+echo ""| tee -a nee.mean
+echo "Elev Sigma 68%: $sigma_cdf_68" | tee  -a nee.mean
+echo "Elev Sigma 95%: $sigma_cdf_95" | tee  -a nee.mean
+echo ""| tee -a nee.mean
+echo "Fixed Range: $Fixed_Range"  | tee  -a nee.mean
+echo "Horizontal Range for plotting $Sol_HRange"  | tee  -a nee.mean
+echo "Vertical Range for plotting $Sol_VRange"  | tee  -a nee.mean
+echo "3D Range: $Sol_3DRange" | tee  -a nee.mean
+echo ""| tee -a nee.mean
 echo "Records: $Records" | tee -a nee.mean
-echo ""
+echo ""| tee -a nee.mean
+
 
 echo Plotting file for $FileFull
-echo "Fixed Range: $Fixed_Range" 
-echo "Horizontal Range for plotting $Sol_HRange"
-echo "Vertical Range for plotting $Sol_VRange"
-echo ""
 
 echo name="'$File, $Sol_Name: '" >file.plt
 echo sol_type="'$Sol_Name'" >>file.plt
@@ -165,10 +181,26 @@ mv $File.enu file
 #echo "pwd $PWD\n"
 #echo "gnuplot file.plt $normalDir/X29_plot.plt\n"
 $normalDir/gnuplot file.plt $normalDir/X29_plot.plt&
-$normalDir/out_range.py -R 0.0305 < file --OUTAGE outage2.csv --DETAIL range2.csv --SUMMARY range2.sum
-$normalDir/out_range.py -R 0.0455 < file --OUTAGE outage3.csv --DETAIL range3.csv --SUMMARY range3.sum
+$normalDir/out_range.py -R 0.0305 < file --OUTAGE outage2.csv --DETAIL range2.csv --SUMMARY range2.sum&
+$normalDir/out_range.py -R 0.0455 < file --OUTAGE outage3.csv --DETAIL range3.csv --SUMMARY range3.sum&
+wait
 $normalDir/gnuplot file.plt $normalDir/range.plt
 $normalDir/gnuplot file.plt $normalDir/range_hist.plt
+
+
+range_2_sigma=`$normalDir/range_summary.pl <range2.sum`
+range_3_sigma=`$normalDir/range_summary.pl <range3.sum`
+echo -n "$File," > $File.sum.csv
+echo -n "$Elev_Range," >> $File.sum.csv
+echo -n "$cdf_68," >> $File.sum.csv
+echo -n "$cdf_95," >> $File.sum.csv
+echo -n "$sigma_cdf_68," >> $File.sum.csv
+echo -n "$sigma_cdf_95," >> $File.sum.csv
+echo -n "$range_2_sigma," >> $File.sum.csv
+echo  "$range_3_sigma" >> $File.sum.csv
+
+echo "<a href=\"$File.sum.csv\">$File.sum.csv</a>">sum.html
+
 wait
 #rm file
 echo Plotting completed
@@ -178,6 +210,9 @@ echo '</pre>'
 #echo '/" />'
 ln -s $normalDir/index.shtml
 cat index.shtml
-rm $File.X29 $File.x29
+rm outage2.csv
+rm outage3.csv
+rm range2.csv
+rm range3.csv
 rm file
-rm $1
+#rm $1
