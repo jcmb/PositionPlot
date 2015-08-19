@@ -26,7 +26,7 @@ for row in Reader:
 #    print row
     lines+=1
 
-    if (lines<4):
+    if (lines<5):
         continue
 
     time=float(row[1])
