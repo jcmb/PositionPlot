@@ -22,7 +22,7 @@ plot 'file' using (abs($11-n)) : ((100.0/records)) title "Northing Error" smooth
 
 set title name."Easting Error cumulative"
 set output "E_Error_cumulative.png"
-plot 'file' using (abs($12-e)) : ((100.0/records)) title "Easting Error" smooth cumulative
+plot 'file' using ($12-e) : ((100.0/records)) title "Easting Error" smooth cumulative
 
 set title name."2D Error cumulative"
 set output "2D_Error_cumulative.png"
