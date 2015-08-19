@@ -92,5 +92,5 @@ END {
 	}
 	
 
-	printf ("North=%2.10f;East=%2.10f;Elev=%2.10f;Records=%1i;North_Min=%2.4f;North_Max=%2.4f;East_Min=%2.4f;East_Max=%2.4f;Elev_Min=%2.4f;Elev_Max=%2.4f;Sol_HRange=%2.3f;Sol_VRange=%2.3f;Sol_3DRange=%2.3f\n", North_Total / (Records) , East_Total / (Records) , Elev_Total / (Records), Records, North_Min, North_Max,East_Min,East_Max,Elev_Min,Elev_Max,Sol_HRange,Sol_VRange,Sol_3DRange);
+	printf ("North=%2.10f;East=%2.10f;Elev=%2.10f;Records=%1i;North_Min=%2.4f;North_Max=%2.4f;North_Range=%2.4f;East_Min=%2.4f;East_Max=%2.4f;East_Range=%2.4f;Elev_Min=%2.4f;Elev_Max=%2.4f;Elev_Range=%2.4f;Sol_HRange=%2.3f;Sol_VRange=%2.3f;Sol_3DRange=%2.3f\n", North_Total / (Records) , East_Total / (Records) , Elev_Total / (Records), Records, North_Min, North_Max,North_Max-North_Min,East_Min,East_Max,East_Max-East_Min,Elev_Min,Elev_Max,Elev_Max-Elev_Min,Sol_HRange,Sol_VRange,Sol_3DRange);
 }
