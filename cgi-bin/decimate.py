@@ -12,7 +12,7 @@ debug=0
 #print sys.argv[1]
 decimate_to=int(float(sys.argv[1])*1000)
 #print type(decimate_to)
-sys.stderr.write ("Decimate to: " + str(decimate_to) + "\n")
+sys.stdout.write ("Decimate to: " + str(decimate_to) + "\n")
 
 Reader=csv.reader(sys.stdin)
 Writer=csv.writer(sys.stdout)
