@@ -1,5 +1,5 @@
 set datafile separator ","
-set terminal png size 800,600 
+set terminal png size 800,600 noenhanced
 #font '/usr/share/fonts/msttcorefonts/arial.ttf' 10
 set xtics border mirror 
 set grid xtics ytics lt 9
