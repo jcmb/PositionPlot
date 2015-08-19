@@ -7,6 +7,9 @@ use File::Basename;
 
 use LWP::Simple;
 
+use JCMBSoft_Config;
+
+#print JCMBSoft_Config::TrimbleTools();
 
 sub urldecode {
     my $s = shift;
@@ -26,6 +29,8 @@ my $Sol = $query->param('Sol');
 my $Point = $query->param('Point');
 my $Ant = $query->param('Ant');
 my $Fixed_Range = $query->param('Range');
+
+#$file_link="https://www.dropbox.com/s/yjupry9omdvm2og/6343_D5.T02?dl=0";
 
 $Point = "0";
 $Ant = "0";
@@ -92,6 +97,15 @@ if ( !$Fixed_Range )
 }
 
 
+if ( !$Decimate )
+{
+#    print $query->header ( );
+#    print "There was a problem getting the solution type\n";
+#    exit;
+    $Decimate="0";
+}
+
+
 #print $filename."\n";
 
 my $file_uploaded=0;
@@ -143,17 +157,13 @@ else
 #print "Content-type: text/html\n\n";
 print "<html><head><title>Plotting GNSS Data</title>";
 print "<base href=\"/results/Position$project/$name/\">";
+print "<meta http-equiv=\"refresh\" content=\"30; url=/results/Position$project/$name/\">";
 print "</head>";
 print "<body><h1>Processing $filename:</h1>\n";
 
 #print $filename."\n";
 
-if ($TrimbleTools) {
-    $upload_file = "/home8/trimblet/public_html/cgi-bin/tmp/".$filename;
-}
-else {
-    $upload_file = "/run/shm/".$filename;
-}
+$upload_file = JCMBSoft_Config::upload_dir().$filename;
 
 if ($file_uploaded) {
     print "Getting uploaded file<br>";
@@ -198,5 +208,16 @@ print "The report will be at \<a href=\"/results/Position$project/$name\"\>/resu
 #print system "./start_single.sh",$upload_file,$extension,$Sol;
 print "<p/>Processing will continue if you navigate away from this page<br/>";
 print "<pre>\n";
-#print "./start_single.sh"," ",$upload_file,"*",$extension,"*",$Sol,"*",$Point,"*",$Ant,"*",$TrimbleTools,"*",$Decimate,"*",$project,"*\n";
-system "./start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$TrimbleTools,$Decimate,$Fixed_Range,$project;
+
+
+if ($JCMBSoft_Config::TrimbleTools) {
+#    print "/bin/bash"," /home8/trimblet/public_html/cgi-bin/PositionPlot/start_single.sh"," ",$upload_file,"*",$extension,"*",$Sol,"*",$Point,"*",$Ant,"*",$TrimbleTools,"*",$Decimate,"*",$project,"*\n";
+    print "</body>";
+    print "</html>\n";
+    exec ("/bin/bash","/home8/trimblet/public_html/cgi-bin/PositionPlot/start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project);
+}
+else  
+   {
+   print "./start_single.sh"," ",$upload_file,"*",$extension,"*",$Sol,"*",$Point,"*",$Ant,"*",$Decimate,"*",$project,"*\n";
+   system "./start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
+   }
