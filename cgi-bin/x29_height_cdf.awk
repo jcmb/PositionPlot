@@ -1,4 +1,4 @@
-#! /bin/awk -f
+#! /usr/bin/awk -f
 # x29_height_cdf. This output only the lines in which the GPS quailty is what the user asks
 
 BEGIN {FS=","

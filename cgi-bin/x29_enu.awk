@@ -1,3 +1,4 @@
+#! /usr/bin/awk 
 #
 # Converts a LLH file from viewdat (using -x) to
 # ENU based on an assumed truth position.

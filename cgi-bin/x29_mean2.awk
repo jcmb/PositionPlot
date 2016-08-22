@@ -1,4 +1,4 @@
-
+#! /usr/bin/awk 
 BEGIN {FS=","
        OFS=","
        OFMT="%2.10f"
