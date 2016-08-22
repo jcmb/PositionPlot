@@ -14,7 +14,6 @@
 
 Location: <!--#include virtual="kml.html" --> 
 <br/>Summary : <!--#include virtual="sum.html" --> 
-<br/>GNSS Data File Summary: <a href="file.sum">Summary</a>
 
 <pre>
 <!--#include virtual="llh.mean" -->

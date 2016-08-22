@@ -62,7 +62,7 @@ logger "Creating X29 file for $File"
 
 viewdat -d29 --translate_rec35_sub2_to_rec29 -x -o$TMP_DIR$$.x29 $1
 
-viewdat -i -d16  -ofile.sum $1
+#viewdat -i -ofile.sum $1
 
 #wait
 

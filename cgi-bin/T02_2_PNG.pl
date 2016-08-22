@@ -233,7 +233,7 @@ if ($JCMBSoft_Config::TrimbleTools) {
 }
 else  
    {
-   print "./start_single.sh"," ",$upload_file," ",$extension," ",$Sol," ",$Point," ",$Ant," ",$Decimate," ",$project,"\n";
+   print "./start_single.sh"," ",$upload_file," ",$extension," ",$Sol," ",$Point," ",$Ant," ",$Decimate," ",$Fixed_Range," ",$project,"\n";
    syslog (LOG_INFO,"Starting processing: " . $upload_file);
    system "./start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
    syslog (LOG_INFO,"Processing finished: " . $upload_file);
