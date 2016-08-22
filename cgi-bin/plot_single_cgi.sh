@@ -1,6 +1,7 @@
 #! /bin/bash
-#echo $1 "*" $2 "*" $3 "<br>"
-echo $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 "<br>"
+
+logger "Plot_single_cgi start $1   $2   $3   $4   $5   $6    $7   $8"
+#echo $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 "<br>"
 # $upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
 #set -x
 
@@ -19,10 +20,20 @@ Decimate=$6
 Fixed_Range=$7
 Project=$8
 
-if [ "$Sol" = -1 ]
+echo "Point $Point"
+echo "Project $Project"
+
+if [ ! $Point = -1 ]
+then
+   Project=$Project/$Point
+fi
+echo "Project $Project"
+logger "Project $Project"
+
+if [ $Sol = -1 ]
 then
    Sol=""
-   echo "Solution type is automatically computed"
+   echo "Solution type is not provided"
 fi
 
 #export PATH
@@ -36,20 +47,26 @@ then
    echo "TrimbleTools"
    mkdir -p ~/public_html/results/Position$Project/$File
    cd ~/public_html/results/Position$Project/$File  && rm * 2> /dev/null
-   TMP_DIR=~/tmp
+   TMP_DIR=~/tmp/
 else
     echo "Non Trimble Tools"
-    mkdir -p /var/www/html/results/Postion$Project/$File
+    mkdir -p /var/www/html/results/Position$Project/$File
     cd /var/www/html/results/Position$Project/$File && rm * 2> /dev/null
-    TMP_DIR=/run/shm
+    TMP_DIR=/run/shm/
 fi
 
+logger `pwd`
 
 echo Creating X29 file for $File
+logger "Creating X29 file for $File"
 
-viewdat -d29 -x -o$$.x29 $1
+viewdat -d29 --translate_rec35_sub2_to_rec29 -x -o$TMP_DIR$$.x29 $1
 
-viewdat -i -d16  -ofile.sum $1&
+viewdat -i -d16  -ofile.sum $1
+
+#wait
+
+rm $1
 
 # Skipping creating the file
 #   echo "Decimation interval: " $Decimate
@@ -57,25 +74,25 @@ viewdat -i -d16  -ofile.sum $1&
 if [ "$Decimate" = -1 ]
 then
    echo "Computing decimation interval"
-   eval $(compute_decimate.py $$.x29)
+   eval $(compute_decimate.py $TMP_DIR$$.x29)
 fi
 
 if [ $Decimate = 0 ]
 then
    echo "No Decimation"
    echo "All Data">Decimation
-   tail -n +5 $$.x29 > $File.X29
+   tail -n +5 $TMP_DIR$$.x29 > $TMP_DIR$File.X29
 else
    echo "Decimation interval: " $Decimate
    echo "Orginal interval: " $interval
    echo "Every: $Decimate (s), orginal ($interval)">Decimation
    echo Creating Decimated file for $File
-   decimate.py $Decimate <$$.x29 > $File.X29
+   decimate.py $Decimate <$TMP_DIR$$.x29 > $TMP_DIR$File.X29
 #   cp $1 $FileFull
 
 fi
 
-rm $$.x29
+rm $TMP_DIR$$.x29
 
 echo name="'$File: '" >file.plt
 echo "$File" >file.html
@@ -83,23 +100,36 @@ echo "$File" >file.html
 
 #ln  -f $File.X29 file
 
-$normalDir/x29_secs.py <$File.X29 >file
+$normalDir/x29_secs.py <$TMP_DIR$File.X29 >file
 $normalDir/gnuplot file.plt $normalDir/X29_sol.plt
 
 #echo "Solution Type $Sol";
 
-eval $(awk -f $normalDir/x29_sol_type.awk $Sol < $File.X29);
+echo "checking database for $Point"
+
+#$normalDir/GNSS_TRUTH.py $Point
+
+eval $($normalDir/GNSS_TRUTH.py $Point)
+
+eval $(awk -f $normalDir/x29_sol_type.awk $Sol < $TMP_DIR$File.X29);
 echo "Solution Type $Sol_Name ($Sol)";
 
+if [ "$Lat" == "" ]
+then
+    eval $(awk -f $normalDir/x29_mean2.awk $Sol <$TMP_DIR$File.X29)
+    echo "Computed" > llh.mean
 
-eval $(awk -f $normalDir/x29_mean2.awk $Sol <$File.X29)
+else
+    echo "Truth from point database"
+    echo "From Database" > llh.mean
+fi
 
 echo "Latitude $Lat"
 echo "Longitude $Long"
 echo "Height $Height"
 echo "Records $Records"
 
-echo "Latitude: $Lat" > llh.mean
+echo "Latitude: $Lat" >> llh.mean
 echo "Longitude: $Long" >> llh.mean
 echo "Height: $Height" >> llh.mean
 #echo "Records: $Records" >> llh.mean
@@ -113,14 +143,14 @@ echo "<a href=\"$File.kml\">$File.kml</a>">kml.html
 echo "<pre>"
 
 
-awk -f $normalDir/x29_sum.awk $Sol <$File.X29 | tee sum.txt
+awk -f $normalDir/x29_sum.awk $Sol <$TMP_DIR$File.X29 | tee sum.txt
 
 if [ $Sol ]
 then
-   awk -f $normalDir/x29_sol.awk $Sol <$File.X29 >$File.sol
-   rm $File.X29
+   awk -f $normalDir/x29_sol.awk $Sol <$TMP_DIR$File.X29 >$File.sol
+   rm $TMP_DIR$File.X29
 else
-   mv $File.X29 $File.sol
+   mv $TMP_DIR$File.X29 $File.sol
 fi
 
 
@@ -134,8 +164,8 @@ echo "Computing NEE Mean"
 eval $(awk -f $normalDir/x29_mean2_enu.awk $Sol $Sol_HRange $Sol_VRange $Fixed_Range <$File.enu)
 
 
-eval $(awk -f $normalDir/x29_height_abs.awk < $File.enu |  sort --field-separator=, --numeric-sort --key=13 | $normalDir/x29_height_cdf.awk $Records )
-eval $(awk -f $normalDir/x29_sigma.awk < $File.enu |  sort --field-separator=, --numeric-sort --key=25 | $normalDir/x29_sigma_cdf.awk $Records )
+eval $(awk -f $normalDir/x29_height_abs.awk < $File.enu |  sort --field-separator=, --numeric-sort --key=13 | awk -f $normalDir/x29_height_cdf.awk $Records )
+eval $(awk -f $normalDir/x29_sigma.awk < $File.enu |  sort --field-separator=, --numeric-sort --key=25 | awk -f $normalDir/x29_sigma_cdf.awk $Records )
 
 echo "North: $North" | tee  nee.mean
 echo "North Min: $North_Min" | tee  -a nee.mean
@@ -167,6 +197,7 @@ echo ""| tee -a nee.mean
 
 
 echo Plotting file for $FileFull
+logger "Plotting file for $FileFull"
 
 echo name="'$File, $Sol_Name: '" >file.plt
 echo sol_type="'$Sol_Name'" >>file.plt
@@ -180,39 +211,53 @@ echo "$FileFull" >file.html
 mv $File.enu file
 #echo "pwd $PWD\n"
 #echo "gnuplot file.plt $normalDir/X29_plot.plt\n"
-$normalDir/gnuplot file.plt $normalDir/X29_plot.plt&
-$normalDir/out_range.py -R 0.0305 < file --OUTAGE outage2.csv --DETAIL range2.csv --SUMMARY range2.sum&
-$normalDir/out_range.py -R 0.0455 < file --OUTAGE outage3.csv --DETAIL range3.csv --SUMMARY range3.sum&
-wait
+
+$normalDir/gnuplot file.plt $normalDir/X29_plot.plt
+
+$normalDir/out_range.py -R 0.0105 < file --OUTAGE outage1cm.csv --DETAIL /dev/null --SUMMARY range1cm.sum
+$normalDir/out_range.py -R 0.0205 < file --OUTAGE outage2cm.csv --DETAIL /dev/null --SUMMARY range2cm.sum
+$normalDir/out_range.py -R 0.0305 < file --OUTAGE outage2sig.csv --DETAIL range2sig.csv --SUMMARY range2sig.sum
+$normalDir/out_range.py -R 0.0455 < file --OUTAGE outage3sig.csv --DETAIL range3sig.csv --SUMMARY range3sig.sum
+#wait
+
 $normalDir/gnuplot file.plt $normalDir/range.plt
 $normalDir/gnuplot file.plt $normalDir/range_hist.plt
 
 
-range_2_sigma=`$normalDir/range_summary.pl <range2.sum`
-range_3_sigma=`$normalDir/range_summary.pl <range3.sum`
+range_1cm=`$normalDir/range_summary.pl <range1cm.sum`
+range_2cm=`$normalDir/range_summary.pl <range2cm.sum`
+range_2_sigma=`$normalDir/range_summary.pl <range2sig.sum`
+range_3_sigma=`$normalDir/range_summary.pl <range3sig.sum`
 echo -n "$File," > $File.sum.csv
 echo -n "$Elev_Range," >> $File.sum.csv
 echo -n "$cdf_68," >> $File.sum.csv
 echo -n "$cdf_95," >> $File.sum.csv
 echo -n "$sigma_cdf_68," >> $File.sum.csv
 echo -n "$sigma_cdf_95," >> $File.sum.csv
+echo -n "$range_1cm," >> $File.sum.csv
+echo -n "$range_2cm," >> $File.sum.csv
 echo -n "$range_2_sigma," >> $File.sum.csv
 echo  "$range_3_sigma" >> $File.sum.csv
 
 echo "<a href=\"$File.sum.csv\">$File.sum.csv</a>">sum.html
 
-wait
+#wait
 #rm file
-echo Plotting completed
 echo '</pre>'
 #echo -n '<base href="http://trimbletools.com/results/Position/'
 #echo -n $File
 #echo '/" />'
-ln -s $normalDir/index.shtml
+cp $normalDir/index.shtml .
 cat index.shtml
-rm outage2.csv
-rm outage3.csv
-rm range2.csv
-rm range3.csv
+rm outage1cm.csv
+rm outage2cm.csv
+rm outage2sig.csv
+rm outage3sig.csv
+#rm range1cm.csv
+#rm range2cm.csv
+rm range2sig.csv
+rm range3sig.csv
 rm file
-#rm $1
+wait
+echo Plotting completed 
+logger "Plot_single_cgi finished $1 * $2 * $3 * $4 * $5 * $6 *  $7 * $8"
