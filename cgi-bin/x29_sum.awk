@@ -124,7 +124,6 @@ END {
  print "Type 8:          " Pos[8] " ("Pos[8]/NR* 100  "%)";
  print "Kalman Auton:    " Pos[9] " ("Pos[9]/NR* 100  "%)";
  print "Kalman DGNSS:    " Pos[10] " ("Pos[10]/NR* 100  "%)";
- print "Kalman SBAS:     " Pos[11] " ("Pos[11]/NR* 100  "%)";
  print "RTX:             " Pos[15] " ("Pos[15]/NR* 100  "%)";
  print "RTX (Fixed):     " Fixed " (" Fixed/NR* 100  "%)";
  print "RTX (Current):   " Current " (" Current/NR* 100  "%)";
