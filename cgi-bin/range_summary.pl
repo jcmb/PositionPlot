@@ -1,4 +1,4 @@
-#! /bin/perl -n
+#! /usr/bin/perl -n
 
 
 if ( /Total Out of range\: +(.*) +(.*)/) {

@@ -4,15 +4,15 @@ use strict;
 use Exporter;
 
 use vars qw($VERSION @EXPORT_OK);
-@EXPORT_OK=qw(TrimbleTools,upload_dir);
+@EXPORT_OK=qw(TrimbleTools upload_dir);
 $VERSION     = 1.00;
 
 sub TrimbleTools() {
-    return 1;
+    return 0;
 }
 
 sub upload_dir() {
-    return "/home8/trimblet/public_html/cgi-bin/tmp/";
+    return "/tmp/";
 }
 
 #$upload_dir = "/home8/trimblet/public_html/cgi-bin/tmp/"
