@@ -22,7 +22,7 @@ plot 'file' using (abs($11-n)) : ((100.0/records)) title "Northing Error" smooth
 
 set title name."Easting Error cumulative"
 set output "E_Error_cumulative.png"
-plot 'file' using ($12-e) : ((100.0/records)) title "Easting Error" smooth cumulative
+plot 'file' using (abs($12-e)) : ((100.0/records)) title "Easting Error" smooth cumulative
 
 set title name."2D Error cumulative"
 set output "2D_Error_cumulative.png"
@@ -220,7 +220,7 @@ set output "U_Error_DOPS.png"
 plot \
    'file' using ($2):($19) title "PDOP" axis x1y2 lt 2, \
    'file' using ($2):($21) title "VDOP" axis x1y2 lt 3, \
-   'file' using ($2):($13-h) title "V Err" lt 1
+   'file' using ($2):(abs($13-h)) title "V Err" lt 1
 
 
 
