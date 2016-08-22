@@ -64,10 +64,22 @@ Location: <!--#include virtual="kml.html" -->
 <p/>
 
 
-<H2>Height >2 Sigma</h2>
+<H2>Height <1 cm</h2>
 
 <pre>
-<!--#include virtual="range2.sum" -->
+<!--#include virtual="range1cm.sum" -->
+</pre>
+
+<H2>Height <2 cm</h2>
+
+<pre>
+<!--#include virtual="range2cm.sum" -->
+</pre>
+
+<H2>Height <2 Sigma</h2>
+
+<pre>
+<!--#include virtual="range2sig.sum" -->
 </pre>
 
 <H3>Height >2 Sigma</h3>
@@ -79,10 +91,10 @@ Location: <!--#include virtual="kml.html" -->
 <p/>
 
 
-<H2>Height >3 Sigma</h2>
+<H2>Height <3 Sigma</h2>
 
 <pre>
-<!--#include virtual="range3.sum" -->
+<!--#include virtual="range3sig.sum" -->
 </pre>
 
 <H3>Height >3 Sigma</h3>
