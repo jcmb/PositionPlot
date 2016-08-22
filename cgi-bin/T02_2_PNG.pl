@@ -9,6 +9,11 @@ use LWP::Simple;
 
 use JCMBSoft_Config;
 
+use Sys::Syslog;
+
+openlog( 'T02_Pos_PNG', 'ndelay', 'daemon' );
+syslog (LOG_INFO,"T02_Pos_PNG Started");
+
 #print JCMBSoft_Config::TrimbleTools();
 
 sub urldecode {
@@ -19,7 +24,7 @@ sub urldecode {
 }
 
 
-$CGI::POST_MAX = 1024 * 120000; # 150mb file max
+$CGI::POST_MAX = 1024 * 200000; # 200mb file max
 my $query = new CGI;
 my $safe_filename_characters = "a-zA-Z0-9_.-";
 
@@ -32,7 +37,7 @@ my $Fixed_Range = $query->param('Range');
 
 #$file_link="https://www.dropbox.com/s/yjupry9omdvm2og/6343_D5.T02?dl=0";
 
-$Point = "0";
+#$Point = "0";
 $Ant = "0";
 
 my $project = $query->param('project');
@@ -47,13 +52,12 @@ if (defined ($project)) {
         $project="/".$project;
         }
     else  {
-        $project="";
+        $project="/General";
         }
 }
 else {
-    $project="";
+    $project="/General";
 }
-
 
 
 if ( !$filename && !$file_link )
@@ -72,12 +76,16 @@ if ( !$Sol )
     $Sol="-1";
 }
 
-if ( !$Point )
+if ( defined ($Point) && $Point != "")
 {
-#    print $query->header ( );
-#    print "There was a problem getting the solution type\n";
-#    exit;
+    $Point_Dir="/".$Point;
+#    print "Point provided: $Point*"
+}
+else 
+{
     $Point="-1";
+    $Point_Dir="";
+#    print "Point not provided"
 }
 
 if ( !$Ant )
@@ -115,12 +123,14 @@ if ($filename) {
     if ($filename=~m/^.*(\\|\/)(.*)/) {  # strip the remote path and keep the filename                                                                                                                                                      
         $filename=$2;
     }
-   $file_uploaded=1
+    $file_uploaded=1;
+    syslog (LOG_INFO,"File provided");
 
 }
 
 if ($file_link){
     $file_linked=1;
+    syslog (LOG_INFO,"File Link");
 #    print "file link<br>";
 #    print $file_link;
     $filename=urldecode($file_link);
@@ -156,8 +166,8 @@ else
 
 #print "Content-type: text/html\n\n";
 print "<html><head><title>Plotting GNSS Data</title>";
-print "<base href=\"/results/Position$project/$name/\">";
-print "<meta http-equiv=\"refresh\" content=\"30; url=/results/Position$project/$name/\">";
+print "<base href=\"/results/Position$project$Point_Dir/$name/\">";
+print "<meta http-equiv=\"refresh\" content=\"30; url=/results/Position$project$Point_Dir/$name/\">";
 print "</head>";
 print "<body><h1>Processing $filename:</h1>\n";
 
@@ -173,7 +183,7 @@ if ($file_uploaded) {
     if (!open ( UPLOADFILE, ">$upload_file" )) {
         print "\n could not open output file".$upload_file;
         die "$!";
-    }
+        }
 # or die "$!";                                                                                                                                                                                                                              
     binmode UPLOADFILE;
 
@@ -184,8 +194,10 @@ if ($file_uploaded) {
 
     close UPLOADFILE;
 }
+
 #my $upload_file = "/home8/trimblet/public_html/cgi-bin/tmp/".$filename;
 #my $upload_file = $filename;
+
 my $upload_filehandle = $query->upload("file");
 
 close UPLOADFILE;
@@ -201,7 +213,7 @@ if ($file_linked) {
 
 
 print "Data is being processed: This will normally takes a few seconds but can take longer for very large files.<br>";
-print "The report will be at \<a href=\"/results/Position$project/$name\"\>/results/Position$project/$name/\</a\>\n";
+print "The report will be at \<a href=\"/results/Position$project$Point_Dir/$name\"\>/results/Position$project$Point_Dir/$name/\</a\>\n";
 #print "The report will not have Summary, Spread or Latitude unless you use the link<br>\n";
 
 #print "bash -c ./start_single.sh \"$upload_file\" \"$extension\" $Sol ";
@@ -214,10 +226,17 @@ if ($JCMBSoft_Config::TrimbleTools) {
 #    print "/bin/bash"," /home8/trimblet/public_html/cgi-bin/PositionPlot/start_single.sh"," ",$upload_file,"*",$extension,"*",$Sol,"*",$Point,"*",$Ant,"*",$TrimbleTools,"*",$Decimate,"*",$project,"*\n";
     print "</body>";
     print "</html>\n";
+    syslog (LOG_INFO,"Starting processing: " . $upload_file);
     exec ("/bin/bash","/home8/trimblet/public_html/cgi-bin/PositionPlot/start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project);
+    syslog (LOG_INFO,"Processing finished: " . $upload_file);
+
 }
 else  
    {
-   print "./start_single.sh"," ",$upload_file,"*",$extension,"*",$Sol,"*",$Point,"*",$Ant,"*",$Decimate,"*",$project,"*\n";
+   print "./start_single.sh"," ",$upload_file," ",$extension," ",$Sol," ",$Point," ",$Ant," ",$Decimate," ",$project,"\n";
+   syslog (LOG_INFO,"Starting processing: " . $upload_file);
    system "./start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
+   syslog (LOG_INFO,"Processing finished: " . $upload_file);
    }
+
+closelog()
