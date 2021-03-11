@@ -1,11 +1,13 @@
 BEGIN {
    FS=",";
-   for (i=0;i<=20;i++) {
+   for (i=0;i<=37;i++) {
       Pos[i] = 0;
       HRange[i] = .05;
       VRange[i] = .05;
       Latency[i] = 1;
+      Name[i] = "Type " + i;
      }
+
    Name[0]="Autonomous";
    HRange[0]=5;
    VRange[0]=10;
@@ -34,14 +36,8 @@ BEGIN {
    Name[8]="Type 8";
    Name[9]="Kalman Auton";
    Name[10]="Kalman DGNSS";
-   Name[11]="Type 11";
-   Name[12]="Type 12";
-   Name[13]="Type 13";
-   Name[14]="Type 14";
    Name[15]="RTX";
-   Name[16]="Type 16";
-   Name[17]="Type 17";
-   Name[18]="Type 18";
+   Name[37]="QZSS";
    
    Max_Index = -1;
 
@@ -60,7 +56,7 @@ Pos[$9]++;
 
 END {
  Max = 0;
- for (i=0;i<=20;i++) {
+ for (i=0;i<=37;i++) {
     if (Pos[i] > Max) {
 	Max = Pos[i];
         Max_Index = i;
