@@ -138,4 +138,4 @@ ln -s $normalDir/index.shtml
 cat index.shtml
 #rm $File.X29 $File.x29
 rm file
-#rm $1
+rm $1

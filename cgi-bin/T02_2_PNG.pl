@@ -24,7 +24,7 @@ sub urldecode {
 }
 
 
-$CGI::POST_MAX = 1024 * 200000; # 200mb file max
+$CGI::POST_MAX = 1024 * 300000; # 300mb file max
 my $query = new CGI;
 my $safe_filename_characters = "a-zA-Z0-9_.-";
 
@@ -34,6 +34,7 @@ my $Sol = $query->param('Sol');
 my $Point = $query->param('Point');
 my $Ant = $query->param('Ant');
 my $Fixed_Range = $query->param('Range');
+my $SaveFile = $query->param('SaveFile');
 
 #$file_link="https://www.dropbox.com/s/yjupry9omdvm2og/6343_D5.T02?dl=0";
 
@@ -111,6 +112,14 @@ if ( !$Decimate )
 #    print "There was a problem getting the solution type\n";
 #    exit;
     $Decimate="0";
+}
+
+if ( !$SaveFile )
+{
+#    print $query->header ( );
+#    print "There was a problem getting the solution type\n";
+#    exit;
+    $SaveFile="0";
 }
 
 
@@ -227,15 +236,15 @@ if ($JCMBSoft_Config::TrimbleTools) {
     print "</body>";
     print "</html>\n";
     syslog (LOG_INFO,"Starting processing: " . $upload_file);
-    exec ("/bin/bash","/home8/trimblet/public_html/cgi-bin/PositionPlot/start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project);
+    exec ("/bin/bash","/home8/trimblet/public_html/cgi-bin/PositionPlot/start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project,$SaveFile);
     syslog (LOG_INFO,"Processing finished: " . $upload_file);
 
 }
 else  
    {
-   print "./start_single.sh"," ",$upload_file," ",$extension," ",$Sol," ",$Point," ",$Ant," ",$Decimate," ",$Fixed_Range," ",$project,"\n";
+   print "./start_single.sh"," ",$upload_file," ",$extension," ",$Sol," ",$Point," ",$Ant," ",$Decimate," ",$Fixed_Range," ",$project," ",$SaveFile,"\n";
    syslog (LOG_INFO,"Starting processing: " . $upload_file);
-   system "./start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
+   system "./start_single.sh",$upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project,$SaveFile;
    syslog (LOG_INFO,"Processing finished: " . $upload_file);
    }
 

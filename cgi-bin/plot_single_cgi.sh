@@ -1,6 +1,6 @@
 #! /bin/bash
 
-logger "Plot_single_cgi start $1   $2   $3   $4   $5   $6    $7   $8"
+logger "Plot_single_cgi start $1   $2   $3   $4   $5  $6  $7  $8 $9"
 #echo $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 "<br>"
 # $upload_file,$extension,$Sol,$Point,$Ant,$Decimate,$Fixed_Range,$project;
 #set -x
@@ -19,6 +19,7 @@ Ant=$5
 Decimate=$6
 Fixed_Range=$7
 Project=$8
+SaveFile=$9
 
 echo "Point $Point"
 echo "Project $Project"
@@ -92,8 +93,15 @@ else
 
 fi
 
-rm $TMP_DIR$$.x29
-
+if [ "$SaveFile" = 1 ]
+then
+    mv $TMP_DIR$$.x29 $File.x29
+    echo "<a href=\"$File.x29\">$File.x29<a/>">SaveFile.html
+    
+else
+    rm $TMP_DIR$$.x29
+    echo "Not Saved">SaveFile.html
+fi
 echo name="'$File: '" >file.plt
 echo "$File" >file.html
 
@@ -105,7 +113,7 @@ $normalDir/gnuplot file.plt $normalDir/X29_sol.plt
 
 #echo "Solution Type $Sol";
 
-echo "checking database for $Point"
+echo "Checking database for $Point"
 
 #$normalDir/GNSS_TRUTH.py $Point
 
