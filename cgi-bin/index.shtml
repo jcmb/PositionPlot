@@ -14,7 +14,7 @@
 
 Location: <!--#include virtual="kml.html" --> 
 <br/>Summary : <!--#include virtual="sum.html" --> 
-<br/>RawData : <!--#include virtual="SaveFile.html" --> 
+<br/>RawData : <!--#include virtual="SaveFile.html" -->
 
 <pre>
 <!--#include virtual="llh.mean" -->
@@ -28,6 +28,10 @@ Location: <!--#include virtual="kml.html" -->
 
 <H2>Latency</h2>
 <img src="Latency.png"/>
+<p/>
+
+<H2>Solutation & Latency</h2>
+<img src="Sol_Latency.png"/>
 <p/>
 
 <H2>SVs</h2>
